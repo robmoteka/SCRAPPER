@@ -125,7 +125,7 @@ func transformURL(rawURL, currentURL, baseURL, baseDomain string) string {
 
 	// Determine if it's an asset or a page
 	ext := strings.ToLower(filepath.Ext(path))
-	
+
 	switch ext {
 	case ".css":
 		return "assets/css/" + filepath.Base(path)

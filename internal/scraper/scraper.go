@@ -88,7 +88,7 @@ func (s *Scraper) setupCallbacks() {
 	s.collector.OnHTML("html", func(e *colly.HTMLElement) {
 		s.mu.Lock()
 		currentURL := e.Request.URL.String()
-		
+
 		// Skip if already visited
 		if s.visitedURLs[currentURL] {
 			s.mu.Unlock()
@@ -111,7 +111,7 @@ func (s *Scraper) setupCallbacks() {
 	s.collector.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		link := e.Attr("href")
 		absoluteURL := e.Request.AbsoluteURL(link)
-		
+
 		// Parse URL
 		parsedURL, err := url.Parse(absoluteURL)
 		if err != nil {
@@ -152,7 +152,7 @@ func (s *Scraper) setupCallbacks() {
 func (s *Scraper) saveHTMLPage(e *colly.HTMLElement) {
 	currentURL := e.Request.URL.String()
 	parsedURL, _ := url.Parse(currentURL)
-	
+
 	var filename string
 	if parsedURL.Path == "/" || parsedURL.Path == "" {
 		filename = "index.html"
@@ -188,7 +188,7 @@ func (s *Scraper) saveHTMLPage(e *colly.HTMLElement) {
 func (s *Scraper) downloadAsset(req *colly.Request, assetURL string, assetType string) {
 	// Get absolute URL
 	absoluteURL := req.AbsoluteURL(assetURL)
-	
+
 	// Parse URL
 	parsedURL, err := url.Parse(absoluteURL)
 	if err != nil {
@@ -220,17 +220,17 @@ func (s *Scraper) downloadAsset(req *colly.Request, assetURL string, assetType s
 // generateAssetFilename creates a filename for an asset
 func (s *Scraper) generateAssetFilename(parsedURL *url.URL, assetType string) string {
 	path := parsedURL.Path
-	
+
 	// Get the base filename
 	filename := filepath.Base(path)
-	
+
 	// If no proper filename, generate one from hash
 	if filename == "" || filename == "." || filename == "/" {
 		hash := md5.Sum([]byte(parsedURL.String()))
 		ext := getExtensionForType(assetType)
 		filename = fmt.Sprintf("%x%s", hash, ext)
 	}
-	
+
 	return filename
 }
 

@@ -85,7 +85,7 @@ func addHTMLToPDF(pdf *gofpdf.Fpdf, htmlPath, title string) error {
 
 	// Get body text
 	bodyText := doc.Find("body").Text()
-	
+
 	// Clean up whitespace
 	lines := strings.Split(bodyText, "\n")
 	for _, line := range lines {
