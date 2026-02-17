@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scraper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🕷️ Web Scraper</h1>
+            <p>Pobierz strony internetowe wraz z zasobami</p>
+        </header>
+
+        <main>
+            <form id="scrapeForm">
+                <div class="form-group">
+                    <label for="url">URL strony</label>
+                    <input 
+                        type="url" 
+                        id="url" 
+                        name="url" 
+                        placeholder="https://example.com" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="depth">Głębokość crawlingu (1-5)</label>
+                    <input 
+                        type="number" 
+                        id="depth" 
+                        name="depth" 
+                        min="1" 
+                        max="5" 
+                        value="2" 
+                        required
+                    >
+                    <small>Określa ile poziomów głębokości linków zostanie pobranych</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="filters">Filtry HTML/JS (opcjonalnie)</label>
+                    <textarea 
+                        id="filters" 
+                        name="filters" 
+                        rows="5" 
+                        placeholder="<script|||</script>&#10;<!-- ads|||ads -->"
+                    ></textarea>
+                    <small>Każdy filtr w nowej linii w formacie: START|||END</small>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn btn-primary">
+                    Start Scraping
+                </button>
+            </form>
+
+            <div id="progress" class="progress-section" style="display: none;">
+                <div class="progress-header">
+                    <h3>Status</h3>
+                    <div class="spinner"></div>
+                </div>
+                
+                <div class="progress-info">
+                    <p><strong>Status:</strong> <span id="statusText">Inicjalizacja...</span></p>
+                    <p><strong>Postęp:</strong> <span id="progressPercent">0%</span></p>
+                    <p><strong>Pobrane strony:</strong> <span id="pagesCount">0</span></p>
+                    <p><strong>Obecny URL:</strong> <span id="currentUrl">-</span></p>
+                </div>
+
+                <div class="progress-bar-container">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+
+                <div id="errors" class="errors" style="display: none;">
+                    <h4>Błędy:</h4>
+                    <ul id="errorList"></ul>
+                </div>
+            </div>
+
+            <div id="results" class="results-section" style="display: none;">
+                <h3>✅ Scraping zakończony!</h3>
+                <p>Projekt został pomyślnie pobrany. Możesz teraz wyeksportować dane.</p>
+                
+                <div class="button-group">
+                    <button id="downloadZip" class="btn btn-success">
+                        📦 Pobierz ZIP
+                    </button>
+                    <button id="generatePdf" class="btn btn-success">
+                        📄 Generuj PDF
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Web Scraper v1.0 | Built with Go & Colly</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
