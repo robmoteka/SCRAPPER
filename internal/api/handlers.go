@@ -3,15 +3,17 @@ package api
 import (
 "encoding/json"
 "fmt"
-"net/http"
-"os"
-"sync"
-"time"
+	"log"
+	"net/http"
+	"os"
+	"sync"
+	"time"
 
-"github.com/go-chi/chi/v5"
-"github.com/google/uuid"
-"github.com/user/scrapper/internal/models"
-"github.com/user/scrapper/internal/scraper"
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
+	"github.com/user/scrapper/internal/export"
+	"github.com/user/scrapper/internal/models"
+	"github.com/user/scrapper/internal/scraper"
 )
 
 // Global state for running scrapers (in production, use Redis/DB)
@@ -154,32 +156,71 @@ return 0
 return (s.Project.Downloaded * 100) / s.Project.Total
 }
 
-// HandleExportZip exports project as ZIP (placeholder for Agent 5)
+// HandleExportZip exports project as ZIP
 func HandleExportZip(w http.ResponseWriter, r *http.Request) {
-projectID := chi.URLParam(r, "id")
+	projectID := chi.URLParam(r, "id")
 
-// Check if project exists
-if !scraper.ProjectExists(projectID, dataDir) {
-respondError(w, http.StatusNotFound, "Project not found")
-return
+	// Check if project exists
+	if !scraper.ProjectExists(projectID, dataDir) {
+		respondError(w, http.StatusNotFound, "Project not found")
+		return
+	}
+
+	// Load project to check status
+	project, err := scraper.LoadProject(projectID, dataDir)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to load project")
+		return
+	}
+
+	// Only export completed projects
+	if project.Status != models.StatusCompleted {
+		respondError(w, http.StatusBadRequest, "Project is not completed yet")
+		return
+	}
+
+	// Set response headers
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip", projectID))
+
+	// Stream ZIP directly to response
+	if err := export.StreamZipToWriter(w, projectID, dataDir); err != nil {
+		// Can't send error response after streaming started
+		log.Printf("ZIP export error for project %s: %v", projectID, err)
+	}
 }
 
-// TODO: Implement in Agent 5
-respondError(w, http.StatusNotImplemented, "ZIP export not yet implemented")
-}
-
-// HandleExportPDF generates and exports project as PDF (placeholder for Agent 5)
+// HandleExportPDF generates and exports project as PDF
 func HandleExportPDF(w http.ResponseWriter, r *http.Request) {
-projectID := chi.URLParam(r, "id")
+	projectID := chi.URLParam(r, "id")
 
-// Check if project exists
-if !scraper.ProjectExists(projectID, dataDir) {
-respondError(w, http.StatusNotFound, "Project not found")
-return
-}
+	// Check if project exists
+	if !scraper.ProjectExists(projectID, dataDir) {
+		respondError(w, http.StatusNotFound, "Project not found")
+		return
+	}
 
-// TODO: Implement in Agent 5
-respondError(w, http.StatusNotImplemented, "PDF export not yet implemented")
+	// Load project to check status
+	project, err := scraper.LoadProject(projectID, dataDir)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, "Failed to load project")
+		return
+	}
+
+	// Only export completed projects
+	if project.Status != models.StatusCompleted {
+		respondError(w, http.StatusBadRequest, "Project is not completed yet")
+		return
+	}
+
+	// Set response headers
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s.pdf", projectID))
+
+	// Generate and stream PDF
+	if err := export.StreamPDFToWriter(w, projectID, dataDir); err != nil {
+		log.Printf("PDF export error for project %s: %v", projectID, err)
+	}
 }
 
 // Helper functions

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scraper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🕷️ Web Scraper</h1>
+            <p>Pobierz stronę internetową wraz z zasobami</p>
+        </header>
+
+        <main>
+            <!-- Scraping Form -->
+            <div id="scrapeForm" class="card">
+                <h2>Konfiguracja</h2>
+                
+                <form id="form">
+                    <div class="form-group">
+                        <label for="url">URL strony *</label>
+                        <input 
+                            type="url" 
+                            id="url" 
+                            name="url" 
+                            placeholder="https://example.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="depth">Głębokość crawlingu (1-5)</label>
+                        <input 
+                            type="number" 
+                            id="depth" 
+                            name="depth" 
+                            min="1" 
+                            max="5" 
+                            value="2"
+                            required
+                        >
+                        <small>Liczba poziomów podstron do pobrania</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="filters">Filtry HTML/JS (opcjonalne)</label>
+                        <textarea 
+                            id="filters" 
+                            name="filters" 
+                            rows="5"
+                            placeholder="<script|||</script>&#10;<style|||</style>&#10;<!-- ads-start|||ads-end -->"
+                        ></textarea>
+                        <small>Format: START|||END (każdy filtr w nowej linii)</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="startBtn">
+                        🚀 Rozpocznij Scraping
+                    </button>
+                </form>
+            </div>
+
+            <!-- Progress Display -->
+            <div id="progressCard" class="card hidden">
+                <h2>Postęp</h2>
+                
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                
+                <p id="progressText" class="progress-text">Inicjalizacja...</p>
+                
+                <div id="progressStats" class="stats">
+                    <div class="stat">
+                        <span class="stat-label">Status:</span>
+                        <span id="statusText" class="stat-value">-</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Pobrane strony:</span>
+                        <span id="downloadedText" class="stat-value">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Łącznie:</span>
+                        <span id="totalText" class="stat-value">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Aktualny URL:</span>
+                        <span id="currentUrlText" class="stat-value url-text">-</span>
+                    </div>
+                </div>
+
+                <div id="errors" class="errors hidden">
+                    <h3>⚠️ Błędy:</h3>
+                    <ul id="errorsList"></ul>
+                </div>
+
+                <button id="cancelBtn" class="btn btn-secondary hidden">
+                    ❌ Anuluj
+                </button>
+            </div>
+
+            <!-- Export Options -->
+            <div id="exportCard" class="card hidden">
+                <h2>✅ Zakończono!</h2>
+                <p>Projekt gotowy do eksportu</p>
+                
+                <div class="export-buttons">
+                    <button id="exportZipBtn" class="btn btn-primary">
+                        📦 Pobierz ZIP
+                    </button>
+                    <button id="exportPdfBtn" class="btn btn-primary">
+                        📄 Generuj PDF
+                    </button>
+                </div>
+
+                <button id="newScrapeBtn" class="btn btn-secondary">
+                    🔄 Nowy Scraping
+                </button>
+            </div>
+        </main>
+
+        <footer>
+            <p>Web Scraper v1.0 | Powered by Go + Colly</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
