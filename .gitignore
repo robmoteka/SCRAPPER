@@ -1,0 +1,21 @@
+# Binaries
+scrapper
+main
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Data directory (runtime storage)
+data/
+
+# Logs
+*.log
+
+# Vendor
+vendor/
+
+# OS specific
+.DS_Store
+Thumbs.db
