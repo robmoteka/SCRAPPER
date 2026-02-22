@@ -45,6 +45,17 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="urlPrefix">Prefix URL (opcjonalny)</label>
+                        <input
+                            type="url"
+                            id="urlPrefix"
+                            name="urlPrefix"
+                            placeholder="https://example.com/docs/ABC"
+                        >
+                        <small>Scraper będzie odwiedzał i pobierał tylko URL-e zaczynające się od tego prefiksu</small>
+                    </div>
+
+                    <div class="form-group">
                         <label for="filters">Filtry HTML/JS (opcjonalne)</label>
                         <textarea 
                             id="filters" 

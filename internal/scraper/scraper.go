@@ -19,15 +19,16 @@ import (
 
 // Scraper manages web scraping operations
 type Scraper struct {
-	Project    *models.Project
-	Collector  *colly.Collector
-	BaseURL    *url.URL
-	BaseDomain string
-	Pages      map[string]*models.Page  // URL -> Page
-	Assets     map[string]*models.Asset // URL -> Asset
-	mu         sync.RWMutex
-	DataDir    string
-	MaxDepth   int
+	Project     *models.Project
+	Collector   *colly.Collector
+	BaseURL     *url.URL
+	BaseDomain  string
+	ScopePrefix string
+	Pages       map[string]*models.Page  // URL -> Page
+	Assets      map[string]*models.Asset // URL -> Asset
+	mu          sync.RWMutex
+	DataDir     string
+	MaxDepth    int
 }
 
 // NewScraper creates a configured scraper instance
@@ -37,14 +38,21 @@ func NewScraper(project *models.Project, dataDir string) (*Scraper, error) {
 		return nil, fmt.Errorf("invalid URL: %w", err)
 	}
 
+	scopePrefix, err := ValidateAndNormalizeScopePrefix(project.URL, project.URLPrefix)
+	if err != nil {
+		return nil, err
+	}
+	project.URLPrefix = scopePrefix
+
 	s := &Scraper{
-		Project:    project,
-		BaseURL:    baseURL,
-		BaseDomain: baseURL.Hostname(),
-		Pages:      make(map[string]*models.Page),
-		Assets:     make(map[string]*models.Asset),
-		DataDir:    dataDir,
-		MaxDepth:   project.Depth,
+		Project:     project,
+		BaseURL:     baseURL,
+		BaseDomain:  baseURL.Hostname(),
+		ScopePrefix: scopePrefix,
+		Pages:       make(map[string]*models.Page),
+		Assets:      make(map[string]*models.Asset),
+		DataDir:     dataDir,
+		MaxDepth:    project.Depth,
 	}
 
 	// Configure Colly
@@ -104,6 +112,11 @@ func (s *Scraper) setupCallbacks() {
 
 	// On request
 	s.Collector.OnRequest(func(r *colly.Request) {
+		if !s.isWithinScope(r.URL.String()) {
+			r.Abort()
+			return
+		}
+
 		s.mu.Lock()
 		s.Project.CurrentURL = r.URL.String()
 		s.mu.Unlock()
@@ -166,6 +179,10 @@ func (s *Scraper) addAsset(assetURL, assetType string) {
 		return
 	}
 
+	if !s.isWithinScope(assetURL) {
+		return
+	}
+
 	s.Assets[assetURL] = &models.Asset{
 		URL:  assetURL,
 		Type: assetType,
@@ -184,6 +201,10 @@ func (s *Scraper) shouldVisit(urlStr string) bool {
 		return false
 	}
 
+	if !s.isWithinScope(urlStr) {
+		return false
+	}
+
 	// Skip common non-HTML extensions
 	ext := strings.ToLower(filepath.Ext(parsedURL.Path))
 	skipExts := []string{".jpg", ".jpeg", ".png", ".gif", ".pdf", ".zip", ".css", ".js", ".svg", ".ico", ".woff", ".woff2", ".ttf"}
@@ -194,6 +215,54 @@ func (s *Scraper) shouldVisit(urlStr string) bool {
 	}
 
 	return true
+}
+
+// ValidateAndNormalizeScopePrefix validates urlPrefix and returns normalized absolute prefix.
+// If prefix is empty, startURL is used as default prefix.
+func ValidateAndNormalizeScopePrefix(startURL, urlPrefix string) (string, error) {
+	baseURL, err := url.Parse(startURL)
+	if err != nil {
+		return "", fmt.Errorf("invalid URL: %w", err)
+	}
+
+	prefix := strings.TrimSpace(urlPrefix)
+	if prefix == "" {
+		prefix = fmt.Sprintf("%s://%s", baseURL.Scheme, baseURL.Host)
+	}
+
+	prefixURL, err := url.Parse(prefix)
+	if err != nil {
+		return "", fmt.Errorf("invalid url_prefix: %w", err)
+	}
+
+	if !prefixURL.IsAbs() {
+		prefixURL = baseURL.ResolveReference(prefixURL)
+	}
+
+	if prefixURL.Hostname() != baseURL.Hostname() {
+		return "", fmt.Errorf("url_prefix must be in the same domain as url")
+	}
+
+	normalized := normalizeURLForScope(prefixURL.String())
+	if normalized == "" {
+		return "", fmt.Errorf("url_prefix cannot be empty")
+	}
+
+	return normalized, nil
+}
+
+func (s *Scraper) isWithinScope(rawURL string) bool {
+	return strings.HasPrefix(normalizeURLForScope(rawURL), s.ScopePrefix)
+}
+
+func normalizeURLForScope(rawURL string) string {
+	parsed, err := url.Parse(strings.TrimSpace(rawURL))
+	if err != nil {
+		return ""
+	}
+
+	parsed.Fragment = ""
+	return strings.TrimRight(parsed.String(), "/")
 }
 
 // Run starts the scraping process
@@ -262,7 +331,7 @@ func (s *Scraper) Run() error {
 	s.Project.UpdatedAt = time.Now()
 	s.Project.Progress = 100
 	s.mu.Unlock()
-	
+
 	// Save project metadata
 	if err := s.SaveProject(); err != nil {
 		return fmt.Errorf("failed to save project metadata: %w", err)

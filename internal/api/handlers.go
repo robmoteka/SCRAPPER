@@ -1,8 +1,8 @@
 package api
 
 import (
-"encoding/json"
-"fmt"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -18,142 +18,149 @@ import (
 
 // Global state for running scrapers (in production, use Redis/DB)
 var (
-activeProjects = make(map[string]*scraper.Scraper)
-projectsMutex  sync.RWMutex
-dataDir        = getEnvOrDefault("DATA_DIR", "./data")
+	activeProjects = make(map[string]*scraper.Scraper)
+	projectsMutex  sync.RWMutex
+	dataDir        = getEnvOrDefault("DATA_DIR", "./data")
 )
 
 // HandleScrape starts a new scraping job
 func HandleScrape(w http.ResponseWriter, r *http.Request) {
-// Parse request
-var req models.ScrapeRequest
-if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-respondError(w, http.StatusBadRequest, "Invalid request body")
-return
-}
+	// Parse request
+	var req models.ScrapeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		respondError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
 
-// Validate input
-if req.URL == "" {
-respondError(w, http.StatusBadRequest, "URL is required")
-return
-}
+	// Validate input
+	if req.URL == "" {
+		respondError(w, http.StatusBadRequest, "URL is required")
+		return
+	}
 
-if req.Depth < 1 || req.Depth > 5 {
-respondError(w, http.StatusBadRequest, "Depth must be between 1 and 5")
-return
-}
+	if req.Depth < 1 || req.Depth > 5 {
+		respondError(w, http.StatusBadRequest, "Depth must be between 1 and 5")
+		return
+	}
 
-// Validate filters
-if err := scraper.ValidateFilters(req.Filters); err != nil {
-respondError(w, http.StatusBadRequest, fmt.Sprintf("Invalid filters: %v", err))
-return
-}
+	urlPrefix, err := scraper.ValidateAndNormalizeScopePrefix(req.URL, req.URLPrefix)
+	if err != nil {
+		respondError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
-// Create project
-project := &models.Project{
-ID:        uuid.New().String(),
-URL:       req.URL,
-Depth:     req.Depth,
-Filters:   req.Filters,
-Status:    models.StatusStarted,
-CreatedAt: time.Now(),
-UpdatedAt: time.Now(),
-}
+	// Validate filters
+	if err := scraper.ValidateFilters(req.Filters); err != nil {
+		respondError(w, http.StatusBadRequest, fmt.Sprintf("Invalid filters: %v", err))
+		return
+	}
 
-// Create scraper
-s, err := scraper.NewScraper(project, dataDir)
-if err != nil {
-respondError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to create scraper: %v", err))
-return
-}
+	// Create project
+	project := &models.Project{
+		ID:        uuid.New().String(),
+		URL:       req.URL,
+		URLPrefix: urlPrefix,
+		Depth:     req.Depth,
+		Filters:   req.Filters,
+		Status:    models.StatusStarted,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
 
-// Register scraper
-projectsMutex.Lock()
-activeProjects[project.ID] = s
-projectsMutex.Unlock()
+	// Create scraper
+	s, err := scraper.NewScraper(project, dataDir)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, fmt.Sprintf("Failed to create scraper: %v", err))
+		return
+	}
 
-// Start scraping async
-go runScraper(s, project.ID)
+	// Register scraper
+	projectsMutex.Lock()
+	activeProjects[project.ID] = s
+	projectsMutex.Unlock()
 
-// Response
-response := models.ScrapeResponse{
-ProjectID: project.ID,
-Status:    models.StatusStarted,
-}
+	// Start scraping async
+	go runScraper(s, project.ID)
 
-respondJSON(w, http.StatusAccepted, response)
+	// Response
+	response := models.ScrapeResponse{
+		ProjectID: project.ID,
+		Status:    models.StatusStarted,
+	}
+
+	respondJSON(w, http.StatusAccepted, response)
 }
 
 // runScraper executes scraping in background
 func runScraper(s *scraper.Scraper, projectID string) {
-// Track project
-globalTracker.TrackProject(projectID, s)
+	// Track project
+	globalTracker.TrackProject(projectID, s)
 
-defer func() {
-// Cleanup after completion
-globalTracker.UntrackProject(projectID)
+	defer func() {
+		// Cleanup after completion
+		globalTracker.UntrackProject(projectID)
 
-projectsMutex.Lock()
-delete(activeProjects, projectID)
-projectsMutex.Unlock()
-}()
+		projectsMutex.Lock()
+		delete(activeProjects, projectID)
+		projectsMutex.Unlock()
+	}()
 
-// Run scraping with periodic status updates
-if err := s.Run(); err != nil {
-s.Project.Status = models.StatusFailed
-s.Project.Errors = append(s.Project.Errors, err.Error())
-s.SaveProject() // Save error state
-}
+	// Run scraping with periodic status updates
+	if err := s.Run(); err != nil {
+		s.Project.Status = models.StatusFailed
+		s.Project.Errors = append(s.Project.Errors, err.Error())
+		s.SaveProject() // Save error state
+	}
 }
 
 // HandleStatus returns scraping job status
 func HandleStatus(w http.ResponseWriter, r *http.Request) {
-projectID := chi.URLParam(r, "id")
+	projectID := chi.URLParam(r, "id")
 
-// Check active scrapers first
-projectsMutex.RLock()
-s, isActive := activeProjects[projectID]
-projectsMutex.RUnlock()
+	// Check active scrapers first
+	projectsMutex.RLock()
+	s, isActive := activeProjects[projectID]
+	projectsMutex.RUnlock()
 
-if isActive {
-// Return live status
-response := models.StatusResponse{
-Status:     s.Project.Status,
-Progress:   calculateProgress(s),
-Downloaded: s.Project.Downloaded,
-Total:      s.Project.Total,
-CurrentURL: s.Project.CurrentURL,
-Errors:     s.Project.Errors,
-}
-respondJSON(w, http.StatusOK, response)
-return
-}
+	if isActive {
+		// Return live status
+		response := models.StatusResponse{
+			Status:     s.Project.Status,
+			Progress:   calculateProgress(s),
+			Downloaded: s.Project.Downloaded,
+			Total:      s.Project.Total,
+			CurrentURL: s.Project.CurrentURL,
+			Errors:     s.Project.Errors,
+		}
+		respondJSON(w, http.StatusOK, response)
+		return
+	}
 
-// Load from disk if not active
-project, err := scraper.LoadProject(projectID, dataDir)
-if err != nil {
-respondError(w, http.StatusNotFound, "Project not found")
-return
-}
+	// Load from disk if not active
+	project, err := scraper.LoadProject(projectID, dataDir)
+	if err != nil {
+		respondError(w, http.StatusNotFound, "Project not found")
+		return
+	}
 
-response := models.StatusResponse{
-Status:     project.Status,
-Progress:   100, // Completed or failed
-Downloaded: project.Downloaded,
-Total:      project.Total,
-CurrentURL: project.CurrentURL,
-Errors:     project.Errors,
-}
+	response := models.StatusResponse{
+		Status:     project.Status,
+		Progress:   100, // Completed or failed
+		Downloaded: project.Downloaded,
+		Total:      project.Total,
+		CurrentURL: project.CurrentURL,
+		Errors:     project.Errors,
+	}
 
-respondJSON(w, http.StatusOK, response)
+	respondJSON(w, http.StatusOK, response)
 }
 
 // calculateProgress computes progress percentage
 func calculateProgress(s *scraper.Scraper) int {
-if s.Project.Total == 0 {
-return 0
-}
-return (s.Project.Downloaded * 100) / s.Project.Total
+	if s.Project.Total == 0 {
+		return 0
+	}
+	return (s.Project.Downloaded * 100) / s.Project.Total
 }
 
 // HandleExportZip exports project as ZIP
@@ -226,18 +233,18 @@ func HandleExportPDF(w http.ResponseWriter, r *http.Request) {
 // Helper functions
 
 func respondJSON(w http.ResponseWriter, status int, data interface{}) {
-w.Header().Set("Content-Type", "application/json")
-w.WriteHeader(status)
-json.NewEncoder(w).Encode(data)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(data)
 }
 
 func respondError(w http.ResponseWriter, status int, message string) {
-respondJSON(w, status, map[string]string{"error": message})
+	respondJSON(w, status, map[string]string{"error": message})
 }
 
 func getEnvOrDefault(key, fallback string) string {
-if value := os.Getenv(key); value != "" {
-return value
-}
-return fallback
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
 }

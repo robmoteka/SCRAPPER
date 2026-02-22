@@ -75,6 +75,7 @@ data/
 
 ### Scraping
 - **Parametr głębokości**: kontrola rekurencyjnego pobierania stron (1-5 poziomów)
+- **Zakres URL przez prefix**: opcjonalne ograniczenie crawl i pobierania assetów do URL-i zaczynających się od `url_prefix`
 - **Pobieranie zasobów**: obrazki, CSS, JS, fonty
 - **Transformacja linków**: konwersja na ścieżki względne dla przenośności
 - **Crawling wewnątrz domeny**: podążanie za linkami tylko w obrębie tej samej domeny
@@ -95,6 +96,7 @@ data/
 - Minimalistyczny formularz z polami:
   - URL strony do pobrania
   - Głębokość crawlingu (1-5)
+  - Prefix URL (opcjonalny, ogranicza scraping do wskazanego zakresu)
   - Filtry HTML/JS (format: `START|||END`, każdy filtr w nowej linii)
 - Progress indicator podczas scrapingu
 - Przyciski do exportu ZIP i PDF po zakończeniu
@@ -139,6 +141,7 @@ go get github.com/jung-kurt/gofpdf
   ```json
   {
     "url": "https://example.com",
+    "url_prefix": "https://example.com/docs/ABC",
     "depth": 2,
     "filters": [
       {"start": "<script", "end": "</script>"},

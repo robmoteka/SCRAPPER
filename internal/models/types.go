@@ -4,9 +4,10 @@ import "time"
 
 // ScrapeRequest represents incoming scraping request from API
 type ScrapeRequest struct {
-	URL     string       `json:"url"`
-	Depth   int          `json:"depth"`
-	Filters []FilterRule `json:"filters"`
+	URL       string       `json:"url"`
+	URLPrefix string       `json:"url_prefix,omitempty"`
+	Depth     int          `json:"depth"`
+	Filters   []FilterRule `json:"filters"`
 }
 
 // FilterRule defines HTML/JS filtering pattern
@@ -29,6 +30,7 @@ const (
 type Project struct {
 	ID         string        `json:"project_id"`
 	URL        string        `json:"url"`
+	URLPrefix  string        `json:"url_prefix,omitempty"`
 	Depth      int           `json:"depth"`
 	Status     ProjectStatus `json:"status"`
 	Filters    []FilterRule  `json:"filters"`

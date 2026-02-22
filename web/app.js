@@ -36,6 +36,7 @@ async function handleFormSubmit(e) {
 
     // Get form data
     const url = document.getElementById('url').value;
+    const urlPrefix = document.getElementById('urlPrefix').value.trim();
     const depth = parseInt(document.getElementById('depth').value);
     const filtersText = document.getElementById('filters').value;
 
@@ -48,6 +49,10 @@ async function handleFormSubmit(e) {
         depth: depth,
         filters: filters
     };
+
+    if (urlPrefix) {
+        requestData.url_prefix = urlPrefix;
+    }
 
     try {
         // Start scraping
