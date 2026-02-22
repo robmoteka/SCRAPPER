@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# Data and temp files
+data/
+*.zip
+*.pdf
+
+# Documentation
+README.md
+AGENTS.md
+ORCHESTRATOR.md
+AGENT_*.md
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+scrapper
+*.exe
+
+# Test files
+test_*.go
+*_test.go

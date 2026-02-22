@@ -1,0 +1,29 @@
+services:
+  scrapper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web-scraper
+    ports:
+      - "8900:8080"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PORT=8080
+      - DATA_DIR=/app/data
+      - MAX_DEPTH_LIMIT=5
+      - TIMEOUT=30
+      - USER_AGENT=WebScraper/1.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - scrapper-network
+
+networks:
+  scrapper-network:
+    driver: bridge

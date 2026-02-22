@@ -2,7 +2,7 @@
 
 **Data**: 17 lutego 2026  
 **Projekt**: Web Scraper z interfejsem webowym w Go  
-**Status**: Ready for orchestrated implementation
+**Status**: ✅ Production Ready - Orchestration Completed
 
 ---
 
@@ -35,7 +35,7 @@ Agent 8 (QA) ← wymaga Agent 7 (deployment gotowy)
 ## Agenci Specjalistyczni
 
 ### 🏗️ Agent 1: Foundation & Bootstrap
-**Plik**: `AGENT_01_FOUNDATION.md`  
+**Plik**: `ARCH/AGENT_01_FOUNDATION.md`  
 **Zadania**: 1-4 (Initialize, Structure, Models, Router)  
 **Dependency**: Żadne  
 **Output**: Podstawowy szkielet aplikacji Go + struktury danych
@@ -43,7 +43,7 @@ Agent 8 (QA) ← wymaga Agent 7 (deployment gotowy)
 ---
 
 ### 🕷️ Agent 2: Core Scraping Engine
-**Plik**: `AGENT_02_SCRAPING.md`  
+**Plik**: `ARCH/AGENT_02_SCRAPING.md`  
 **Zadania**: 5-6 (Colly integration, Link transformation)  
 **Dependency**: Agent 1 (modele, folder structure)  
 **Output**: Działający silnik scrapingu z depth control + transformacja linków
@@ -51,7 +51,7 @@ Agent 8 (QA) ← wymaga Agent 7 (deployment gotowy)
 ---
 
 ### 🔧 Agent 3: Filtering & Storage
-**Plik**: `AGENT_03_FILTERING.md`  
+**Plik**: `ARCH/AGENT_03_FILTERING.md`  
 **Zadania**: 7-8 (HTML filtering, File storage)  
 **Dependency**: Agent 2 (scraper logic)  
 **Output**: System filtrowania HTML/JS + persystencja projektów
@@ -59,7 +59,7 @@ Agent 8 (QA) ← wymaga Agent 7 (deployment gotowy)
 ---
 
 ### 🌐 Agent 4: API Layer
-**Plik**: `AGENT_04_API.md`  
+**Plik**: `ARCH/AGENT_04_API.md`  
 **Zadania**: 9-10 (Handlers, Async scraping)  
 **Dependency**: Agent 1-3 (wszystkie core features)  
 **Output**: REST API endpoints + status tracking
@@ -67,7 +67,7 @@ Agent 8 (QA) ← wymaga Agent 7 (deployment gotowy)
 ---
 
 ### 📦 Agent 5: Export Features
-**Plik**: `AGENT_05_EXPORT.md`  
+**Plik**: `ARCH/AGENT_05_EXPORT.md`  
 **Zadania**: 11-13 (ZIP export, PDF export, API handlers)  
 **Dependency**: Agent 4 (API layer)  
 **Output**: Export ZIP/PDF + odpowiednie endpointy
@@ -75,7 +75,7 @@ Agent 8 (QA) ← wymaga Agent 7 (deployment gotowy)
 ---
 
 ### 💻 Agent 6: Web UI Frontend
-**Plik**: `AGENT_06_FRONTEND.md`  
+**Plik**: `ARCH/AGENT_06_FRONTEND.md`  
 **Zadania**: 14-16 (HTML, CSS, JavaScript)  
 **Dependency**: Agent 4 (API działające)  
 **Output**: Responsywny interfejs webowy
@@ -83,7 +83,7 @@ Agent 8 (QA) ← wymaga Agent 7 (deployment gotowy)
 ---
 
 ### 🐳 Agent 7: Containerization
-**Plik**: `AGENT_07_DOCKER.md`  
+**Plik**: `ARCH/AGENT_07_DOCKER.md`  
 **Zadania**: 17-19 (Dockerfile, docker-compose, testing)  
 **Dependency**: Agent 1-6 (cała aplikacja)  
 **Output**: Konteneryzacja + deployment ready
@@ -91,7 +91,7 @@ Agent 8 (QA) ← wymaga Agent 7 (deployment gotowy)
 ---
 
 ### ✅ Agent 8: Polish & QA
-**Plik**: `AGENT_08_QA.md`  
+**Plik**: `ARCH/AGENT_08_QA.md`  
 **Zadania**: 20-22 (Edge cases, Logging, Documentation)  
 **Dependency**: Agent 7 (deployment gotowy)  
 **Output**: Production-ready application
@@ -179,14 +179,14 @@ Zweryfikuj implementację Agent X:
 
 | Agent | Status | Zadania | Pliki | Testy | Notes |
 |-------|--------|---------|-------|-------|-------|
-| 1: Foundation | ⏳ TODO | 1-4 | 0/5 | ⬜ | Inicjalizacja projektu |
-| 2: Scraping | ⏳ TODO | 5-6 | 0/2 | ⬜ | Wymaga Agent 1 |
-| 3: Filtering | ⏳ TODO | 7-8 | 0/2 | ⬜ | Wymaga Agent 2 |
-| 4: API | ⏳ TODO | 9-10 | 0/2 | ⬜ | Wymaga Agent 1-3 |
-| 5: Export | ⏳ TODO | 11-13 | 0/3 | ⬜ | Wymaga Agent 4 |
-| 6: Frontend | ⏳ TODO | 14-16 | 0/3 | ⬜ | Wymaga Agent 4 |
-| 7: Docker | ⏳ TODO | 17-19 | 0/2 | ⬜ | Wymaga Agent 1-6 |
-| 8: QA | ⏳ TODO | 20-22 | 0/1 | ⬜ | Wymaga Agent 7 |
+| 1: Foundation | ✅ DONE | 1-4 | 5/5 | ✅ | Ukończono |
+| 2: Scraping | ✅ DONE | 5-6 | 2/2 | ✅ | Ukończono |
+| 3: Filtering | ✅ DONE | 7-8 | 2/2 | ✅ | Ukończono |
+| 4: API | ✅ DONE | 9-10 | 2/2 | ✅ | Ukończono |
+| 5: Export | ✅ DONE | 11-13 | 3/3 | ✅ | Ukończono |
+| 6: Frontend | ✅ DONE | 14-16 | 3/3 | ✅ | Ukończono |
+| 7: Docker | ✅ DONE | 17-19 | 2/2 | ✅ | Ukończono |
+| 8: QA | ✅ DONE | 20-22 | 1/1 | ✅ | Ukończono |
 
 **Legenda**:
 - ⏳ TODO - Oczekuje na implementację
@@ -215,7 +215,7 @@ go fmt ./...
 
 # Run server (smoke test)
 go run cmd/server/main.go &
-curl http://localhost:8080
+curl http://localhost:8900
 
 # Kill server
 pkill -f "cmd/server/main.go"
@@ -223,7 +223,7 @@ pkill -f "cmd/server/main.go"
 
 ### Final Integration Test (po Agent 6):
 1. Uruchom serwer lokalnie
-2. Otwórz `http://localhost:8080`
+2. Otwórz `http://localhost:8900`
 3. Wprowadź URL testowy: `https://example.com`
 4. Głębokość: 2
 5. Dodaj filtr: `<script|||</script>`
@@ -237,7 +237,7 @@ pkill -f "cmd/server/main.go"
 ### Docker Test (po Agent 7):
 ```bash
 docker-compose up --build
-# Test jak wyżej na http://localhost:8080
+# Test jak wyżej na http://localhost:8900
 docker-compose down
 ```
 
@@ -343,12 +343,12 @@ go build ./... && echo "✅ Build OK"
 go run cmd/server/main.go
 
 # Test API endpoint
-curl -X POST http://localhost:8080/api/scrape \
+curl -X POST http://localhost:8900/api/scrape \
   -H "Content-Type: application/json" \
   -d '{"url":"https://example.com","depth":2}'
 
 # Docker quick test
-docker-compose up --build -d && sleep 5 && curl http://localhost:8080
+docker-compose up --build -d && sleep 5 && curl http://localhost:8900
 
 # Cleanup
 docker-compose down && rm -rf data/*
@@ -358,23 +358,25 @@ docker-compose down && rm -rf data/*
 
 ## Final Checklist (pre-delivery)
 
-- [ ] Wszystkie 8 agentów completed (status matrix ✅)
-- [ ] Aplikacja build bez warnings
-- [ ] Docker container runs successfully
-- [ ] Manual E2E test passed (scraping → export)
-- [ ] README.md updated z deployment instructions
-- [ ] AGENTS.md zaktualizowany (status: Production Ready)
-- [ ] data/ folder w .gitignore
-- [ ] No hardcoded credentials/secrets
-- [ ] Logging działa properly
-- [ ] Error handling graceful
+- [x] Wszystkie 8 agentów completed (status matrix ✅)
+- [x] Aplikacja build bez warnings
+- [x] Docker container runs successfully
+- [x] Manual E2E test passed (scraping → export)
+- [x] README.md updated z deployment instructions
+- [x] AGENTS.md zaktualizowany (status: Production Ready)
+- [x] data/ folder w .gitignore
+- [x] No hardcoded credentials/secrets
+- [x] Logging działa properly
+- [x] Error handling graceful
 
 ---
 
-**Ready to begin**: Invoke Agent 1 with:
+**Orchestration complete**: Wszystkie fazy zostały ukończone.
+
+**Archiwalne uruchomienie Agent 1 (historycznie)**:
 ```bash
 @workspace #file:AGENT_01_FOUNDATION.md Rozpocznij implementację Agenta 1
 ```
 
-**Last Updated**: 17 lutego 2026  
-**Orchestrator Version**: 1.0
+**Last Updated**: 22 lutego 2026  
+**Orchestrator Version**: 1.1

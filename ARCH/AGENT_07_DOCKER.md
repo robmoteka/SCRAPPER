@@ -120,7 +120,7 @@ services:
       dockerfile: Dockerfile
     container_name: web-scraper
     ports:
-      - "8080:8080"
+      - "8900:8080"
     volumes:
       # Persist scraped data
       - ./data:/app/data
@@ -205,7 +205,7 @@ echo -e "\n${YELLOW}Step 4: Testing API endpoints...${NC}"
 
 # Test root (should serve HTML)
 echo "Testing GET /"
-curl -f -s http://localhost:8080/ > /dev/null
+curl -f -s http://localhost:8900/ > /dev/null
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ Frontend accessible${NC}"
 else
@@ -214,7 +214,7 @@ fi
 
 # Test scrape endpoint
 echo "Testing POST /api/scrape"
-RESPONSE=$(curl -s -X POST http://localhost:8080/api/scrape \
+RESPONSE=$(curl -s -X POST http://localhost:8900/api/scrape \
     -H "Content-Type: application/json" \
     -d '{
         "url": "https://example.com",
@@ -239,7 +239,7 @@ sleep 30
 # Test status endpoint
 if [ -n "$PROJECT_ID" ]; then
     echo "Testing GET /api/project/$PROJECT_ID/status"
-    STATUS_RESPONSE=$(curl -s http://localhost:8080/api/project/$PROJECT_ID/status)
+    STATUS_RESPONSE=$(curl -s http://localhost:8900/api/project/$PROJECT_ID/status)
     echo "Status: $STATUS_RESPONSE"
     
     if echo "$STATUS_RESPONSE" | grep -q "completed"; then
@@ -350,7 +350,7 @@ Po ukończeniu Agenta 7:
 - [ ] Container healthcheck passes (green status)
 
 ### Functionality
-- [ ] Frontend dostępny na http://localhost:8080
+- [ ] Frontend dostępny na http://localhost:8900
 - [ ] API endpoints działają (POST /scrape, GET /status)
 - [ ] Scraping wykonuje się w kontenerze
 - [ ] Pliki zapisują się do mounted volume (`./data/`)
@@ -381,7 +381,7 @@ docker ps
 docker inspect web-scraper | grep Health -A 5
 
 # 4. Test via browser
-open http://localhost:8080
+open http://localhost:8900
 
 # 5. Run scraping job
 # (Use browser or curl)
@@ -392,7 +392,7 @@ ls -la data/
 # 7. Test restart
 docker-compose restart
 # Wait 10s
-curl http://localhost:8080/
+curl http://localhost:8900/
 
 # 8. Check logs
 docker-compose logs --tail=50 scrapper
